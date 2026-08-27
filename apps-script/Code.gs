@@ -31,6 +31,11 @@ function doPost(e) {
       return json({ ok: false, error: "bad token" });
     }
 
+    // read-back for the statistics page
+    if (body.action === "summary") {
+      return json(summary());
+    }
+
     var tabName = resolveTab(body.tab);
     var sheet = getOrCreateTab(tabName);
 
@@ -59,6 +64,29 @@ function doPost(e) {
 
 function doGet() {
   return json({ ok: true, service: "ExpenseTracker", tabs: [TAB_PARENTS, TAB_PRIVATE] });
+}
+
+/**
+ * Returns every row of both tabs as [isoDate, description, amount] so the
+ * stats page can aggregate client-side. Dates are formatted in the sheet's
+ * own timezone to avoid UTC drift.
+ */
+function summary() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var tz = ss.getSpreadsheetTimeZone();
+  var out = {};
+  [TAB_PARENTS, TAB_PRIVATE].forEach(function (name) {
+    var sh = ss.getSheetByName(name);
+    if (!sh || sh.getLastRow() < 2) { out[name] = []; return; }
+    var rows = sh.getRange(2, 1, sh.getLastRow() - 1, 3).getValues();
+    out[name] = rows
+      .filter(function (r) { return r[0] !== "" || r[1] !== "" || r[2] !== ""; })
+      .map(function (r) {
+        var d = (r[0] && r[0].getTime) ? Utilities.formatDate(r[0], tz, "yyyy-MM-dd") : String(r[0]);
+        return [d, String(r[1]), Number(r[2]) || 0];
+      });
+  });
+  return { ok: true, rows: out };
 }
 
 /* ---------- helpers ---------- */

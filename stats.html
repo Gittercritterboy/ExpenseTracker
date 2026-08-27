@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#16a34a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>ExpenseTracker · Stats</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-right">
+        <a href="index.html" class="iconbtn" title="Back" aria-label="Back to entry">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </a>
+        <h1>Statistics</h1>
+      </div>
+      <div class="source" id="source">…</div>
+    </header>
+
+    <div class="filters">
+      <div class="chips" id="periodChips">
+        <button type="button" class="chip" data-period="month">This month</button>
+        <button type="button" class="chip" data-period="lastmonth">Last month</button>
+        <button type="button" class="chip" data-period="3mo">3 months</button>
+        <button type="button" class="chip" data-period="year">This year</button>
+        <button type="button" class="chip" data-period="all">All</button>
+      </div>
+      <div class="chips" id="klassChips">
+        <button type="button" class="chip" data-klass="all">Both</button>
+        <button type="button" class="chip" data-klass="parents">Parents</button>
+        <button type="button" class="chip" data-klass="private">Private</button>
+      </div>
+    </div>
+
+    <section>
+      <span class="label">Total spent</span>
+      <div class="stat-big" id="total">–</div>
+      <div class="stat-sub" id="totalSub"></div>
+    </section>
+
+    <section class="stats-section">
+      <span class="label">By item</span>
+      <div id="byItem"></div>
+    </section>
+
+    <section class="stats-section">
+      <span class="label">Last 6 months</span>
+      <div class="months" id="byMonth"></div>
+    </section>
+
+    <p class="stat-sub" id="hint" style="margin-top:22px"></p>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="stats.js"></script>
+</body>
+</html>

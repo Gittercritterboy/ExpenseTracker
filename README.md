@@ -95,12 +95,35 @@ That's it — entries now land in the sheet.
 | **Undo** for 5 s (configurable) before anything is sent | fix a mistake with no server round‑trip |
 | **Offline queue** + auto‑sync, closes‑safe via `sendBeacon` | log on the Bahn with no signal, it syncs later |
 | Installable PWA, full‑screen, own home‑screen icon | opens like a native app |
+| **Voice entry** (🎤 button) — say "Tankstelle 45 euro privat" | fills description + amount + class in one go, you just confirm |
+| **Statistics page** (📊 icon, top‑right) | totals by item + 6‑month trend, without cluttering the entry screen |
+
+### Voice entry
+
+Tap **🎤 Speak**, say the expense, e.g. *"Lebensmittel zwölf euro fünfzig"* or
+*"Tankstelle 45 privat"*. It parses description, amount, and (optionally) a
+`privat` / `eltern` keyword into the form — it does **not** auto‑submit, so you
+glance at it and tap **Add**. Language is `VOICE_LANG` in `config.js` (`de-DE`).
+
+> Uses the browser's Web Speech API: works in Chrome / Edge and Android Chrome.
+> **iOS Safari has no speech recognition**, so the button is hidden there — normal
+> typing is unaffected.
+
+### Statistics page
+
+`stats.html`, reached from the 📊 icon. Filter by period (this month / last month /
+3 months / year / all) and by Parents / Private, see spend per item as ranked
+bars, plus a last‑6‑months column chart.
+
+It reads the **whole Google Sheet** through a `summary` action added to `Code.gs`.
+If you haven't redeployed `Code.gs` since adding stats, the page still works but
+shows only expenses **logged on this device** and tells you so — redeploy to get
+full history (Deploy ▸ Manage deployments ▸ edit ▸ *New version* ▸ Deploy).
 
 ### Ideas to go even faster later
-- **Share‑sheet / URL entry**: open `.../index.html?amount=4.20&desc=Essen` prefilled — lets you make an iOS/Android shortcut or widget.
-- **Last‑amount memory per description** (e.g. Krankenkasse is always the same number) → offer it as a one‑tap default.
-- **Voice**: a mic button using the Web Speech API to parse "Lebensmittel zwölf euro fünfzig".
-- **Monthly totals** pulled back from the sheet via a `doGet` summary, shown on the screen.
+- **Share‑sheet / URL entry**: open `.../index.html?amount=4,20&desc=Essen` prefilled — make an iOS/Android shortcut or home‑screen widget.
+- **Last‑amount memory per description** → offer it as a one‑tap default for fixed costs.
+- **Budget line** on the stats page (e.g. "€ 320 of € 500 this month").
 
 ---
 
@@ -108,10 +131,12 @@ That's it — entries now land in the sheet.
 
 | File | Purpose |
 |---|---|
-| `index.html` / `styles.css` / `app.js` | the app |
+| `index.html` / `styles.css` / `app.js` | the entry screen |
+| `stats.html` / `stats.js` | the statistics screen |
+| `voice.js` | speech‑to‑expense parsing |
 | `config.js` | **the only file you edit** for setup |
 | `sw.js` / `manifest.webmanifest` / `icons/` | PWA / offline |
-| `apps-script/Code.gs` | paste into the Sheet's Apps Script editor |
+| `apps-script/Code.gs` | paste into the Sheet's Apps Script editor (redeploy after changes) |
 
 ## Troubleshooting
 

@@ -1,11 +1,14 @@
 /* ExpenseTracker service worker — offline app shell -----------------------
    Bump CACHE when you change any cached file so clients pick it up. */
-var CACHE = "expensetracker-v1";
+var CACHE = "expensetracker-v2";
 var SHELL = [
   "./",
   "./index.html",
+  "./stats.html",
   "./styles.css",
   "./app.js",
+  "./stats.js",
+  "./voice.js",
   "./config.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
@@ -37,9 +40,14 @@ self.addEventListener("fetch", function (e) {
   if (req.mode === "navigate") {
     e.respondWith(
       fetch(req).then(function (res) {
-        caches.open(CACHE).then(function (c) { c.put("./index.html", res.clone()); });
+        var copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(req, copy); });
         return res;
-      }).catch(function () { return caches.match("./index.html"); })
+      }).catch(function () {
+        return caches.match(req).then(function (hit) {
+          return hit || caches.match("./index.html");
+        });
+      })
     );
     return;
   }
