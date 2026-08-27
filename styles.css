@@ -50,11 +50,13 @@ html, body {
   display: inline-flex;
   align-items: center;
   gap: 7px;
+  height: 32px;
   background: var(--surface);
   border: 1px solid var(--line);
   color: var(--muted);
   font-size: 12px;
-  padding: 6px 10px;
+  font-weight: 600;
+  padding: 0 12px;
   border-radius: 999px;
 }
 .sync .dot {
@@ -99,18 +101,19 @@ html, body {
 .segment input:focus-visible + label { outline: 2px solid #fff; outline-offset: 2px; }
 
 /* ---- chips ---- */
-.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
-  min-height: 44px;
-  padding: 0 14px;
+  min-height: 36px;
+  padding: 0 11px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   background: var(--surface);
   border: 1px solid var(--line);
   color: var(--text);
   border-radius: 999px;
-  font-size: 15px;
+  font-size: 13.5px;
+  line-height: 1;
   cursor: pointer;
 }
 .chip:active { background: var(--surface-2); }
@@ -224,14 +227,17 @@ input::placeholder { color: #5f6f92; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.err { border-color: var(--danger); }
 
-/* ---- top bar right cluster + icon buttons ---- */
+/* ---- top bar right cluster + pill buttons ---- */
 .topbar-right { display: flex; align-items: center; gap: 8px; }
 .iconbtn {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; border-radius: 10px;
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 32px; padding: 0 12px;
+  border-radius: 999px;
   background: var(--surface); border: 1px solid var(--line);
   color: var(--muted); text-decoration: none; flex: none;
+  font-size: 12px; font-weight: 600;
 }
+.iconbtn svg { width: 15px; height: 15px; }
 .iconbtn:active { background: var(--surface-2); }
 
 /* ---- voice entry button ---- */

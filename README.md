@@ -88,7 +88,7 @@ That's it — entries now land in the sheet.
 | Amount field is **auto‑focused** on open, `inputmode="decimal"` | numeric keypad appears immediately; accepts `12,34` or `12.34` |
 | **Parents/Private** defaults to *Parents*, one tap to switch | no dropdown, no per‑entry decision most of the time |
 | Date defaults to **today**; `Today / Yesterday / 2 days ago` chips + calendar | the common case is zero taps |
-| Description **quick‑pick chips** (editable list in `config.js`) | one tap instead of typing |
+| Description **quick‑pick chips**, emoji‑tagged and **filtered by mode** — Parents vs Private show different buttons (`DESCRIPTIONS` in `config.js`) | one tap, only the relevant options |
 | Free‑text description with **autocomplete** from your own history | past entries come back with 2–3 letters |
 | `Enter` in description jumps to amount; `Enter` in amount **submits** | full keyboard entry, no reaching for the button |
 | After save the form **keeps date + class, clears the rest, re‑focuses amount** | rapid-fire multiple entries |

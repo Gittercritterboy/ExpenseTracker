@@ -46,6 +46,14 @@
     return h || null;
   }
 
+  function knownLabels() {
+    var d = CFG.DESCRIPTIONS || {};
+    var list = Array.isArray(d)
+      ? d
+      : [].concat(d.parents || [], d["private"] || [], d.both || []);
+    return list.map(function (x) { return typeof x === "string" ? x : x.label; });
+  }
+
   var FILLER = /\b(f[üu]r|kostet|kosten|ausgabe|ausgaben|hab|habe|ich|bezahlt|gezahlt|bei|vom|von|einen|eine|einer|das|der|die|mir|heute|war|waren|betrag|gerade|so|circa|etwa)\b/g;
   var CURRENCY = /\b(euros?|eur|€|cents?)\b/g;
 
@@ -90,7 +98,7 @@
     desc = desc.replace(/\d+/g, " ").replace(CURRENCY, " ").replace(FILLER, " ")
                .replace(/\s+/g, " ").trim();
     if (desc) {
-      var hit = (CFG.DESCRIPTIONS || []).filter(function (d) {
+      var hit = knownLabels().filter(function (d) {
         var a = d.toLowerCase(), b = desc;
         return a === b || a.replace(/\s+/g, "") === b.replace(/\s+/g, "");
       })[0];

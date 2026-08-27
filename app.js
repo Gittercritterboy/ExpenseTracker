@@ -56,24 +56,40 @@
   function offsetDays(n) { var d = new Date(); d.setDate(d.getDate() + n); return d; }
 
   /* ---------- description chips ---------- */
+  function currentKlass() {
+    var r = form.querySelector('input[name="klass"]:checked');
+    return r ? r.value : "parents";
+  }
+  function descListFor(klass) {
+    var d = CFG.DESCRIPTIONS || {};
+    if (Array.isArray(d)) {                       // backwards-compatible flat list
+      return d.map(function (x) { return typeof x === "string" ? { label: x } : x; });
+    }
+    return [].concat(d[klass] || [], d.both || []).map(function (x) {
+      return typeof x === "string" ? { label: x } : x;
+    });
+  }
   function buildDescChips() {
     descChips.innerHTML = "";
-    (CFG.DESCRIPTIONS || []).forEach(function (label) {
+    descListFor(currentKlass()).forEach(function (item) {
+      var label = item.label;
       var b = document.createElement("button");
       b.type = "button";
       b.className = "chip";
-      b.textContent = label;
+      b.dataset.label = label;
+      b.textContent = (item.emoji ? item.emoji + " " : "") + label;
       b.addEventListener("click", function () {
-        descInput.value = label;
+        descInput.value = label;                  // clean text only -> that's what the sheet gets
         markActiveChip(label);
         amountInput.focus();
       });
       descChips.appendChild(b);
     });
+    markActiveChip(descInput.value.trim());
   }
   function markActiveChip(label) {
     [].forEach.call(descChips.children, function (c) {
-      c.classList.toggle("is-active", c.textContent === label);
+      c.classList.toggle("is-active", !!label && c.dataset.label === label);
     });
   }
   function refreshHistDatalist() {
@@ -354,6 +370,9 @@
   descInput.addEventListener("keydown", function (e) {
     if (e.key === "Enter") { e.preventDefault(); amountInput.focus(); }
   });
+  [].forEach.call(form.querySelectorAll('input[name="klass"]'), function (r) {
+    r.addEventListener("change", buildDescChips);
+  });
   $("clearRecent").addEventListener("click", function () {
     state.recent = state.recent.filter(function (x) { return x.status === "pending"; });
     save(LS.recent, state.recent); renderRecent();
@@ -375,7 +394,7 @@
           var bits = [];
           if (parsed.klass) {
             var r = $("k-" + parsed.klass);
-            if (r) r.checked = true;
+            if (r) { r.checked = true; buildDescChips(); }   // .checked doesn't fire change
             bits.push(parsed.klass === "private" ? "Private" : "Parents");
           }
           if (parsed.desc) {

@@ -20,16 +20,27 @@ window.CONFIG = {
   /* Which sheet tab each class writes to. Must match the tab names in Code.gs. */
   TABS: { parents: "Parents", private: "Private" },
 
-  /* Quick-pick description buttons. Reorder / edit freely – most used first. */
-  DESCRIPTIONS: [
-    "Lebensmittel",
-    "Essen",
-    "Bahn Fahrt",
-    "Tankstelle",
-    "Kleidung",
-    "Freizeit",
-    "Sonstiges"
-  ],
+  /* Quick-pick description buttons.
+     - "parents" buttons show only while the Parents mode is selected
+     - "private" buttons show only while the Private mode is selected
+     - "both"    buttons always show
+     Only `label` is written to the sheet; `emoji` is cosmetic. Edit freely. */
+  DESCRIPTIONS: {
+    parents: [
+      { emoji: "🛒", label: "Lebensmittel" },
+      { emoji: "🍽️", label: "Essen" },
+      { emoji: "🚆", label: "Bahn Fahrt" },
+      { emoji: "🩺", label: "Krankenkasse" },
+      { emoji: "👕", label: "Kleidung" }
+    ],
+    private: [
+      { emoji: "🎉", label: "Freizeit" },
+      { emoji: "⛽", label: "Tankstelle" }
+    ],
+    both: [
+      { emoji: "🧾", label: "Sonstiges" }
+    ]
+  },
 
   /* Seconds an entry can be undone before it is committed to the sheet.
      During this window it sits locally; Undo cancels it with zero server calls. */
