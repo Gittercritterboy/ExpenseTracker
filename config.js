@@ -5,11 +5,11 @@
 window.CONFIG = {
   /* Paste the /exec URL of your deployed Apps Script Web App here.
      (README.md -> "2. Google Sheet setup" walks through getting it.) */
-  ENDPOINT: "PASTE_YOUR_APPS_SCRIPT_EXEC_URL_HERE",
+  ENDPOINT: "https://script.google.com/macros/s/AKfycbzeo3e5Hl4fLDM1CswgmoeY6Pm5yvELI8zA-cMKgXjTs-R0UXESGTZfdOHWAcimj2g0/exec",
 
   /* Shared secret – must match TOKEN in Code.gs. Change it to any random string.
      It only stops random people who find the URL from writing to your sheet. */
-  TOKEN: "change-me-to-a-random-string",
+  TOKEN: "exp-7h3k9q2p",
 
   /* Currency shown in the UI. Sent value is always a plain number. */
   CURRENCY: "€",
