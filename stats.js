@@ -1,7 +1,7 @@
 /* ExpenseTracker — statistics page ----------------------------------------
- * Shows totals by item and a 6-month trend. Data comes from the Google Sheet
- * (via a POST { action:"summary" }); if that isn't available it falls back to
- * the entries logged on this device (localStorage "et_log").
+ * Donut of spending per quick-pick category + a 6-month total trend.
+ * Data comes from the Google Sheet (POST { action:"summary" }); if that isn't
+ * available it falls back to the entries logged on this device ("et_log").
  * ---------------------------------------------------------------------- */
 (function () {
   "use strict";
@@ -30,6 +30,39 @@
   function fmt(n) {
     return SYM + " " + (Math.round(n * 100) / 100)
       .toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  var PALETTE = [
+    "#16a34a", "#38bdf8", "#f59e0b", "#a78bfa", "#ef4444",
+    "#ec4899", "#2dd4bf", "#eab308", "#94a3b8"
+  ];
+
+  /* Quick-pick tag labels, longest first so "Bahn Fahrt" wins over "Bahn". */
+  function tagLabels() {
+    var d = CFG.DESCRIPTIONS || {};
+    var list = Array.isArray(d) ? d
+      : [].concat(d.parents || [], d["private"] || [], d.both || []);
+    return list
+      .map(function (x) { return typeof x === "string" ? x : x.label; })
+      .filter(Boolean)
+      .sort(function (a, b) { return b.length - a.length; });
+  }
+
+  /* Fold a free-text description onto its quick-pick tag:
+     "Essen", "Essen Nobis", "Essen-Nobis" -> "Essen". No tag match -> the text. */
+  function bucketFor(desc) {
+    var s = String(desc == null ? "" : desc).trim();
+    var low = s.toLowerCase();
+    var tags = tagLabels();
+    for (var i = 0; i < tags.length; i++) {
+      var t = tags[i].toLowerCase();
+      if (low === t) return tags[i];
+      if (low.indexOf(t) === 0) {
+        var next = low.charAt(t.length);
+        if (!/[a-z0-9äöüß]/i.test(next)) return tags[i];   // tag followed by space/punctuation
+      }
+    }
+    return s || "—";
   }
   var toastTimer;
   function toast(msg, err) {
@@ -97,41 +130,83 @@
       ? rows.length + (rows.length === 1 ? " entry" : " entries") + " · ø " + fmt(total / rows.length) + " each"
       : "Nothing in this period";
 
-    var byItem = {};
+    var byCat = {};
     rows.forEach(function (r) {
-      var k = (r.desc || "—").trim() || "—";
-      byItem[k] = byItem[k] || { total: 0, count: 0 };
-      byItem[k].total += r.amount;
-      byItem[k].count += 1;
+      var k = bucketFor(r.desc);
+      byCat[k] = byCat[k] || { total: 0, count: 0 };
+      byCat[k].total += r.amount;
+      byCat[k].count += 1;
     });
-    var items = Object.keys(byItem).map(function (k) {
-      return { name: k, total: byItem[k].total, count: byItem[k].count };
+    var items = Object.keys(byCat).map(function (k) {
+      return { name: k, total: byCat[k].total, count: byCat[k].count };
     }).sort(function (a, b) { return b.total - a.total; });
 
-    var host = $("byItem");
+    renderPie(items, total);
+    renderMonths();
+  }
+
+  function renderPie(items, total) {
+    var host = $("pie");
     host.innerHTML = "";
-    if (!items.length) {
+    if (!items.length || total <= 0) {
       host.innerHTML = '<div class="empty">No expenses in this period.</div>';
-    } else {
-      var max = items[0].total || 1;
-      items.forEach(function (it) {
-        var pct = total ? Math.round(it.total / total * 100) : 0;
-        var row = document.createElement("div");
-        row.className = "bar-row";
-        row.innerHTML =
-          '<span class="b-name"></span><span class="b-val"></span>' +
-          '<span class="b-sub"></span>' +
-          '<div class="b-track"><div class="b-fill"></div></div>';
-        row.querySelector(".b-name").textContent = it.name;
-        row.querySelector(".b-val").textContent = fmt(it.total);
-        row.querySelector(".b-sub").textContent =
-          it.count + (it.count === 1 ? " entry" : " entries") + " · " + pct + "% · ø " + fmt(it.total / it.count);
-        row.querySelector(".b-fill").style.width = Math.max(2, Math.round(it.total / max * 100)) + "%";
-        host.appendChild(row);
+      return;
+    }
+
+    // cap at 8 slices, fold the tail into "Rest"
+    var top = items.slice(0, 8);
+    var tail = items.slice(8);
+    if (tail.length) {
+      top.push({
+        name: "Rest (" + tail.length + ")",
+        total: tail.reduce(function (s, x) { return s + x.total; }, 0),
+        count: tail.reduce(function (s, x) { return s + x.count; }, 0)
       });
     }
 
-    renderMonths();
+    // donut: radius picked so the circumference ≈ 100 → dasharray = percent
+    var R = 15.915, C = 21, cum = 0, segs = "";
+    top.forEach(function (it, i) {
+      var pct = it.total / total * 100;
+      segs += '<circle cx="' + C + '" cy="' + C + '" r="' + R + '" fill="none" stroke="' +
+        PALETTE[i % PALETTE.length] + '" stroke-width="6" stroke-linecap="butt" ' +
+        'stroke-dasharray="' + pct.toFixed(3) + ' ' + (100 - pct).toFixed(3) + '" ' +
+        'stroke-dashoffset="' + (25 - cum).toFixed(3) + '"></circle>';
+      cum += pct;
+    });
+
+    var tStr = Math.round(total).toLocaleString("de-DE");
+    var fs = tStr.length > 6 ? 3 : tStr.length > 4 ? 3.8 : 4.6;
+    var inner = document.createElement("div");
+    inner.className = "pie-inner";
+    inner.innerHTML =
+      '<svg viewBox="0 0 42 42" class="donut" role="img" aria-label="Spending by category">' +
+        '<circle cx="' + C + '" cy="' + C + '" r="' + R + '" fill="none" stroke="var(--surface-2)" stroke-width="6"></circle>' +
+        segs +
+        '<text x="21" y="20.5" class="donut-total" dominant-baseline="central" style="font-size:' + fs + 'px">' + tStr + '</text>' +
+        '<text x="21" y="25" class="donut-cap" dominant-baseline="central">' + SYM + ' total</text>' +
+      '</svg>';
+
+    var ul = document.createElement("ul");
+    ul.className = "legend";
+    top.forEach(function (it, i) {
+      var pct = Math.round(it.total / total * 100);
+      var li = document.createElement("li");
+      var dot = document.createElement("span");
+      dot.className = "dot";
+      dot.style.background = PALETTE[i % PALETTE.length];
+      var name = document.createElement("span");
+      name.className = "lg-name";
+      name.textContent = it.name;
+      var val = document.createElement("span");
+      val.className = "lg-val";
+      val.textContent = fmt(it.total) + "  ·  " + pct + "%";
+      li.appendChild(dot); li.appendChild(name); li.appendChild(val);
+      ul.appendChild(li);
+    });
+
+    host.appendChild(inner);
+    host.appendChild(ul);
   }
 
   function renderMonths() {

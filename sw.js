@@ -1,6 +1,6 @@
 /* ExpenseTracker service worker — offline app shell -----------------------
    Bump CACHE when you change any cached file so clients pick it up. */
-var CACHE = "expensetracker-v3";
+var CACHE = "expensetracker-v4";
 var SHELL = [
   "./",
   "./index.html",
@@ -8,7 +8,6 @@ var SHELL = [
   "./styles.css",
   "./app.js",
   "./stats.js",
-  "./voice.js",
   "./config.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",

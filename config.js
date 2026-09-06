@@ -14,9 +14,6 @@ window.CONFIG = {
   /* Currency shown in the UI. Sent value is always a plain number. */
   CURRENCY: "€",
 
-  /* Language for the microphone / voice entry (BCP-47 tag). */
-  VOICE_LANG: "de-DE",
-
   /* Which sheet tab each class writes to. Must match the tab names in Code.gs. */
   TABS: { parents: "Parents", private: "Private" },
 
@@ -44,5 +41,5 @@ window.CONFIG = {
 
   /* Seconds an entry can be undone before it is committed to the sheet.
      During this window it sits locally; Undo cancels it with zero server calls. */
-  UNDO_SECONDS: 5
+  UNDO_SECONDS: 10
 };

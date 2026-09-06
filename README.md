@@ -92,33 +92,27 @@ That's it — entries now land in the sheet.
 | Free‑text description with **autocomplete** from your own history | past entries come back with 2–3 letters |
 | `Enter` in description jumps to amount; `Enter` in amount **submits** | full keyboard entry, no reaching for the button |
 | After save the form **keeps date + class, clears the rest, re‑focuses amount** | rapid-fire multiple entries |
-| **Undo** for 5 s (configurable) before anything is sent | fix a mistake with no server round‑trip |
+| **Undo** for 10 s (`UNDO_SECONDS` in `config.js`) before anything is sent | fix a mistake with no server round‑trip |
 | **Offline queue** + auto‑sync, closes‑safe via `sendBeacon` | log on the Bahn with no signal, it syncs later |
 | Installable PWA, full‑screen, own home‑screen icon | opens like a native app |
-| **Voice entry** (🎤 button) — say "Tankstelle 45 euro privat" | fills description + amount + class in one go, you just confirm |
-| **Statistics page** (📊 icon, top‑right) | totals by item + 6‑month trend, without cluttering the entry screen |
-
-### Voice entry
-
-Tap **🎤 Speak**, say the expense, e.g. *"Lebensmittel zwölf euro fünfzig"* or
-*"Tankstelle 45 privat"*. It parses description, amount, and (optionally) a
-`privat` / `eltern` keyword into the form — it does **not** auto‑submit, so you
-glance at it and tap **Add**. Language is `VOICE_LANG` in `config.js` (`de-DE`).
-
-> Uses the browser's Web Speech API: works in Chrome / Edge and Android Chrome.
-> **iOS Safari has no speech recognition**, so the button is hidden there — normal
-> typing is unaffected.
+| **Statistics page** (📊, top‑right) | donut by category + 6‑month trend, off the entry screen |
 
 ### Statistics page
 
-`stats.html`, reached from the 📊 icon. Filter by period (this month / last month /
-3 months / year / all) and by Parents / Private, see spend per item as ranked
-bars, plus a last‑6‑months column chart.
+`stats.html`, reached from the 📊 button. Filter by period (this month / last month /
+3 months / year / all) and by Parents / Private. Shows:
 
-It reads the **whole Google Sheet** through a `summary` action added to `Code.gs`.
-If you haven't redeployed `Code.gs` since adding stats, the page still works but
-shows only expenses **logged on this device** and tells you so — redeploy to get
-full history (Deploy ▸ Manage deployments ▸ edit ▸ *New version* ▸ Deploy).
+- a **donut chart** of spending per category, with a legend (amount + %),
+- a **last‑6‑months** column chart of totals.
+
+Entries are grouped by their **quick‑pick tag**: anything starting with a tag word
+counts under it, so `Essen`, `Essen Nobis` and `Essen-Nobis` all land in **Essen**.
+A description that matches no tag keeps its own slice.
+
+It reads the **whole Google Sheet** through a `summary` action in `Code.gs`.
+If `Code.gs` hasn't been redeployed since stats were added, the page still works
+but shows only expenses **logged on this device** and says so — redeploy for full
+history (Deploy ▸ Manage deployments ▸ edit ▸ *New version* ▸ Deploy).
 
 ### Ideas to go even faster later
 - **Share‑sheet / URL entry**: open `.../index.html?amount=4,20&desc=Essen` prefilled — make an iOS/Android shortcut or home‑screen widget.
@@ -133,7 +127,6 @@ full history (Deploy ▸ Manage deployments ▸ edit ▸ *New version* ▸ Deplo
 |---|---|
 | `index.html` / `styles.css` / `app.js` | the entry screen |
 | `stats.html` / `stats.js` | the statistics screen |
-| `voice.js` | speech‑to‑expense parsing |
 | `config.js` | **the only file you edit** for setup |
 | `sw.js` / `manifest.webmanifest` / `icons/` | PWA / offline |
 | `apps-script/Code.gs` | paste into the Sheet's Apps Script editor (redeploy after changes) |

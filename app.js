@@ -378,48 +378,6 @@
     save(LS.recent, state.recent); renderRecent();
   });
 
-  /* ---------- voice entry ---------- */
-  var voiceBtn = $("voiceBtn"), voiceLabel = $("voiceLabel");
-  if (voiceBtn && window.Voice && Voice.supported) {
-    voiceBtn.hidden = false;
-    voiceBtn.addEventListener("click", function () {
-      Voice.toggle({
-        onstate: function (listening, interim) {
-          voiceBtn.classList.toggle("listening", listening);
-          voiceLabel.textContent = listening
-            ? (interim ? '“' + interim + '”' : "Listening…")
-            : "Speak";
-        },
-        onresult: function (parsed) {
-          var bits = [];
-          if (parsed.klass) {
-            var r = $("k-" + parsed.klass);
-            if (r) { r.checked = true; buildDescChips(); }   // .checked doesn't fire change
-            bits.push(parsed.klass === "private" ? "Private" : "Parents");
-          }
-          if (parsed.desc) {
-            descInput.value = parsed.desc;
-            markActiveChip(parsed.desc);
-            bits.push(parsed.desc);
-          }
-          if (parsed.amount != null) {
-            amountInput.value = Number.isInteger(parsed.amount)
-              ? String(parsed.amount)
-              : parsed.amount.toFixed(2).replace(".", ",");
-            bits.push(money(parsed.amount));
-          }
-          toast(bits.length ? "Heard: " + bits.join(" · ") : "Nothing recognised", !bits.length);
-          (parsed.amount != null ? submitBtn : amountInput).focus();
-        },
-        onerror: function (msg) {
-          voiceBtn.classList.remove("listening");
-          voiceLabel.textContent = "Speak";
-          toast(msg, true);
-        }
-      });
-    });
-  }
-
   // A hard crash/close during the undo window: make sure those entries are
   // still delivered by re-queuing them into the outbox on next open.
   state.recent.forEach(function (e) {
