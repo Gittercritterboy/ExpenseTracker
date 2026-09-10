@@ -21,14 +21,18 @@ window.CONFIG = {
      - "parents" buttons show only while the Parents mode is selected
      - "private" buttons show only while the Private mode is selected
      - "both"    buttons always show
-     Only `label` is written to the sheet; `emoji` is cosmetic. Edit freely. */
+     Only `label` is written to the sheet; `emoji` is cosmetic.
+     Optional `tag`: on the stats page, any description that STARTS WITH this word
+     is grouped into this category (e.g. tag "Flug" catches "Flug nach Rom").
+     Without `tag`, the match keyword is the label itself. Edit freely. */
   DESCRIPTIONS: {
     parents: [
       { emoji: "🛒", label: "Lebensmittel" },
       { emoji: "🍽️", label: "Essen" },
       { emoji: "🚆", label: "Bahn Fahrt" },
       { emoji: "🩺", label: "Krankenkasse" },
-      { emoji: "👕", label: "Kleidung" }
+      { emoji: "👕", label: "Kleidung" },
+      { emoji: "✈️", label: "Flugticket", tag: "Flug" }
     ],
     private: [
       { emoji: "🎉", label: "Freizeit" },

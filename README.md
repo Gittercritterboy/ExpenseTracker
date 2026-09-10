@@ -105,9 +105,11 @@ That's it — entries now land in the sheet.
 - a **donut chart** of spending per category, with a legend (amount + %),
 - a **last‑6‑months** column chart of totals.
 
-Entries are grouped by their **quick‑pick tag**: anything starting with a tag word
-counts under it, so `Essen`, `Essen Nobis` and `Essen-Nobis` all land in **Essen**.
-A description that matches no tag keeps its own slice.
+Entries are grouped by category: any description that **starts with** a quick‑pick
+label — or that item's optional `tag` keyword — counts under it. So `Essen`,
+`Essen Nobis`, `Essensmarke` all land in **Essen**, and with `{ label: "Flugticket",
+tag: "Flug" }` both `Flugticket` and `Flug nach Rom` land in **Flugticket**.
+A description matching nothing keeps its own slice.
 
 It reads the **whole Google Sheet** through a `summary` action in `Code.gs`.
 If `Code.gs` hasn't been redeployed since stats were added, the page still works

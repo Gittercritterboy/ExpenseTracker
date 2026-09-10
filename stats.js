@@ -37,30 +37,32 @@
     "#ec4899", "#2dd4bf", "#eab308", "#94a3b8"
   ];
 
-  /* Quick-pick tag labels, longest first so "Bahn Fahrt" wins over "Bahn". */
-  function tagLabels() {
+  /* Category rules from the quick-pick list. `key` is what a description must
+     start with; `name` is the label the slice gets. An item may set `tag` to
+     make the match keyword shorter than its label, e.g.
+       { label: "Flugticket", tag: "Flug" }  ->  "Flug nach Rom" counts as Flugticket.
+     Longest key first so "Bahn Fahrt" wins over a bare "Bahn". */
+  function catRules() {
     var d = CFG.DESCRIPTIONS || {};
     var list = Array.isArray(d) ? d
       : [].concat(d.parents || [], d["private"] || [], d.both || []);
     return list
-      .map(function (x) { return typeof x === "string" ? x : x.label; })
-      .filter(Boolean)
-      .sort(function (a, b) { return b.length - a.length; });
+      .map(function (x) {
+        if (typeof x === "string") return { key: x, name: x };
+        return { key: (x.tag || x.label || ""), name: (x.label || x.tag || "") };
+      })
+      .filter(function (r) { return r.key; })
+      .sort(function (a, b) { return b.key.length - a.key.length; });
   }
 
-  /* Fold a free-text description onto its quick-pick tag:
-     "Essen", "Essen Nobis", "Essen-Nobis" -> "Essen". No tag match -> the text. */
+  /* Fold a free-text description onto its category by prefix (case-insensitive):
+     "Essen", "Essen Nobis", "Essensmarke" -> "Essen". No match -> the text itself. */
   function bucketFor(desc) {
     var s = String(desc == null ? "" : desc).trim();
     var low = s.toLowerCase();
-    var tags = tagLabels();
-    for (var i = 0; i < tags.length; i++) {
-      var t = tags[i].toLowerCase();
-      if (low === t) return tags[i];
-      if (low.indexOf(t) === 0) {
-        var next = low.charAt(t.length);
-        if (!/[a-z0-9äöüß]/i.test(next)) return tags[i];   // tag followed by space/punctuation
-      }
+    var rules = catRules();
+    for (var i = 0; i < rules.length; i++) {
+      if (low.indexOf(rules[i].key.toLowerCase()) === 0) return rules[i].name;
     }
     return s || "—";
   }
