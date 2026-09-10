@@ -72,15 +72,15 @@
   function buildDescChips() {
     descChips.innerHTML = "";
     descListFor(currentKlass()).forEach(function (item) {
-      var label = item.label;
+      var value = item.text || item.label;        // what goes into the field / the sheet
       var b = document.createElement("button");
       b.type = "button";
       b.className = "chip";
-      b.dataset.label = label;
-      b.textContent = (item.emoji ? item.emoji + " " : "") + label;
+      b.dataset.label = value;
+      b.textContent = (item.emoji ? item.emoji + " " : "") + item.label;
       b.addEventListener("click", function () {
-        descInput.value = label;                  // clean text only -> that's what the sheet gets
-        markActiveChip(label);
+        descInput.value = value;
+        markActiveChip(value);
         amountInput.focus();
       });
       descChips.appendChild(b);
