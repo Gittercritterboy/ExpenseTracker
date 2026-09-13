@@ -142,3 +142,9 @@ history (Deploy ▸ Manage deployments ▸ edit ▸ *New version* ▸ Deploy).
   in `Code.gs` / the sheet.
 - **Old version keeps loading after a change.** Bump `CACHE` in `sw.js`, or on the
   phone remove and re‑add the app once.
+- **App launch gets stuck on the green splash icon.** `sw.js` renders navigations
+  straight from the offline copy and refreshes the cache quietly in the background,
+  so a slow/flaky connection shouldn't be able to cause this any more. If it still
+  happens (mostly reported on iOS), it's a known iOS/WebKit issue where a suspended
+  home‑screen web app occasionally fails to resume — swipe it away in the app
+  switcher and reopen; if it recurs a lot, remove and re‑add the home‑screen icon.

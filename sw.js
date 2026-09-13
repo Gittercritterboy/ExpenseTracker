@@ -1,6 +1,6 @@
 /* ExpenseTracker service worker — offline app shell -----------------------
    Bump CACHE when you change any cached file so clients pick it up. */
-var CACHE = "expensetracker-v6";
+var CACHE = "expensetracker-v7";
 var SHELL = [
   "./",
   "./index.html",
@@ -35,17 +35,26 @@ self.addEventListener("fetch", function (e) {
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;        // let cross-origin pass through
 
-  // network-first for navigations so updates land; fall back to cached shell
+  // Navigations: render instantly from the offline copy (so a slow/flaky
+  // connection can never leave you stuck on the splash screen), then quietly
+  // refresh the cache in the background for the next launch.
   if (req.mode === "navigate") {
     e.respondWith(
-      fetch(req).then(function (res) {
-        var copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); });
-        return res;
-      }).catch(function () {
-        return caches.match(req).then(function (hit) {
-          return hit || caches.match("./index.html");
-        });
+      caches.match(req).then(function (cached) {
+        var refresh = fetch(req).then(function (res) {
+          if (res && res.ok) {
+            var copy = res.clone();
+            caches.open(CACHE).then(function (c) { c.put(req, copy); });
+          }
+          return res;
+        }).catch(function () { return null; });
+
+        if (cached) {
+          refresh.catch(function () {}); // fire-and-forget, never blocks this launch
+          return cached;
+        }
+        // very first-ever load, nothing cached yet: wait on the network once
+        return refresh.then(function (res) { return res || caches.match("./index.html"); });
       })
     );
     return;
