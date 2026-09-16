@@ -134,21 +134,21 @@
     toastTimer = setTimeout(function () { toastEl.classList.remove("show"); }, 2600);
   }
 
-  /* ---------- sync indicator ---------- */
+  /* ---------- sync indicator: the Add-expense button doubles as the status ---------- */
   function updateSync() {
-    var btn = $("syncBtn"), txt = $("syncText");
+    var btn = submitBtn, txt = $("syncText");
     btn.classList.remove("is-ok", "is-wait", "is-off");
     var waiting = state.outbox.length + Object.keys(pending).length;
     var label;
     if (!navigator.onLine && state.outbox.length) {
       btn.classList.add("is-off");
-      label = "Offline · " + state.outbox.length + " queued. Tap to retry.";
+      label = "Offline, " + state.outbox.length + " queued";
     } else if (waiting) {
       btn.classList.add("is-wait");
-      label = waiting + " to sync. Tap to retry now.";
+      label = waiting + " syncing";
     } else {
       btn.classList.add("is-ok");
-      label = "All synced.";
+      label = "All synced";
     }
     txt.textContent = label;
     btn.title = label;
@@ -400,12 +400,6 @@
   window.addEventListener("online", function () { updateSync(); flush(); });
   window.addEventListener("offline", updateSync);
   setInterval(function () { if (navigator.onLine) flush(); }, 20000);
-  $("syncBtn").addEventListener("click", function () {
-    if (!navigator.onLine) { toast("No connection — will retry automatically", true); return; }
-    if (!state.outbox.length) { toast("Nothing to sync"); return; }
-    toast("Syncing…");
-    flush();
-  });
 
   /* ---------- wire up ---------- */
   [].forEach.call(dateChips.querySelectorAll(".chip[data-days]"), function (c) {

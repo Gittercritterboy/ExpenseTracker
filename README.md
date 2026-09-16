@@ -94,7 +94,7 @@ That's it — entries now land in the sheet.
 | After save the form **keeps date + class, clears the rest, re‑focuses amount** | rapid-fire multiple entries |
 | **Undo** for 10 s (`UNDO_SECONDS` in `config.js`) before anything is sent | fix a mistake with no server round‑trip |
 | **Offline queue** + auto‑sync (on reconnect, on reopening the app, every 20 s) | log on the Bahn with no signal, it syncs later |
-| **Sync square** (top‑right) — green = synced, amber = syncing, red = offline; **tap it any time to force a retry now** | one glance for status, one tap to unstick it |
+| **Add expense button doubles as the sync status** — green = synced, amber = syncing, red = offline/queued | one glance, zero extra UI |
 | Installable PWA, full‑screen, own home‑screen icon | opens like a native app |
 | **Statistics page** (📊, top‑right) | donut by category + 6‑month trend, off the entry screen |
 
@@ -136,10 +136,11 @@ history (Deploy ▸ Manage deployments ▸ edit ▸ *New version* ▸ Deploy).
 
 ## Troubleshooting
 
-- **Entries stay "to sync".** `ENDPOINT` still the placeholder, or the deployment
-  isn't *Anyone* access. Re‑check step 2.4. Otherwise: tap the sync square to force
-  a retry, or reopen the app (it retries automatically on reconnect and on every
-  reopen). A "Retry" button appears next to any Recent entry stuck on "will retry".
+- **Add‑expense button stays amber/red.** `ENDPOINT` still the placeholder, or the
+  deployment isn't *Anyone* access. Re‑check step 2.4. Otherwise: it retries
+  automatically on reconnect and on every reopen, or reopen the app to force an
+  attempt now. A "Retry" button also appears next to any Recent entry stuck on
+  "will retry".
 - **An entry never made it to the sheet at all, with no error shown.** This was a
   real bug: closing/backgrounding the app used `sendBeacon` to send queued entries,
   but treated the browser merely *accepting* that request as proof the sheet

@@ -47,19 +47,6 @@ html, body {
   margin: 0;
   letter-spacing: 0.2px;
 }
-.syncbox {
-  width: 40px; height: 40px;
-  border: 0; border-radius: 11px;
-  background: var(--muted);
-  cursor: pointer;
-  transition: background .2s;
-  flex: none;
-}
-.syncbox.is-ok   { background: var(--accent); }
-.syncbox.is-wait { background: var(--warn); }
-.syncbox.is-off  { background: var(--danger); }
-.syncbox:active  { opacity: .8; }
-
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
@@ -160,7 +147,7 @@ input::placeholder { color: #5f6f92; }
 
 .spacer { flex: 1; min-height: 8px; }
 
-/* ---- submit ---- */
+/* ---- submit / sync status: the button's colour IS the sync status ---- */
 .submit {
   position: sticky;
   bottom: calc(8px + env(safe-area-inset-bottom));
@@ -172,9 +159,13 @@ input::placeholder { color: #5f6f92; }
   font-size: 19px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 8px 24px rgba(22,163,74,.35);
+  box-shadow: 0 8px 24px rgba(22, 163, 74, .35);
+  transition: background .25s, box-shadow .25s;
 }
-.submit:active { background: var(--accent-press); transform: translateY(1px); }
+.submit.is-ok   { background: var(--accent); box-shadow: 0 8px 24px rgba(22, 163, 74, .35); }
+.submit.is-wait { background: var(--warn);   box-shadow: 0 8px 24px rgba(245, 158, 11, .35); }
+.submit.is-off  { background: var(--danger); box-shadow: 0 8px 24px rgba(239, 68, 68, .35); }
+.submit:active { filter: brightness(.88); transform: translateY(1px); }
 .submit:disabled { opacity: .55; box-shadow: none; }
 .submit.flash { animation: flash .4s ease; }
 @keyframes flash { 0%{background:#22c55e} 100%{background:var(--accent)} }
