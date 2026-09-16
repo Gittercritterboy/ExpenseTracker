@@ -146,6 +146,13 @@ history (Deploy ▸ Manage deployments ▸ edit ▸ *New version* ▸ Deploy).
   received it, and dropped the entry from the retry queue either way. Fixed — the
   outbox now only clears an entry once the sheet has actually confirmed it. Entries
   lost before this fix aren't recoverable automatically; re‑enter that one manually.
+- **A retried/synced entry landed in the sheet under today's date instead of its
+  own.** Also a real bug, in `Code.gs`: a missing/corrupted date used to fall back
+  to *today* silently instead of failing. Fixed — `Code.gs` now rejects a request
+  with no valid date (visible "error"/"will retry" instead of a silently wrong
+  row), and the app refuses to send or retry such an entry client‑side too, telling
+  you to re‑enter it. **Requires redeploying `Code.gs`** (Deploy ▸ Manage
+  deployments ▸ edit ▸ *New version* ▸ Deploy) to take effect.
 - **`{"ok":false,"error":"bad token"}`.** `TOKEN` in `config.js` ≠ `TOKEN` in `Code.gs`.
 - **Rows in the wrong tab.** `TABS` values in `config.js` must equal the tab names
   in `Code.gs` / the sheet.

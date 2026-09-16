@@ -43,6 +43,10 @@ function doPost(e) {
     var desc = String(body.description || "").trim();
     var amount = Number(body.amount);
 
+    // A missing/malformed date must fail loudly, never silently fall back to
+    // "today" - that would write a real expense under the wrong day with no
+    // visible error.
+    if (!when) return json({ ok: false, error: "missing or invalid date" });
     if (!desc) return json({ ok: false, error: "empty description" });
     if (!isFinite(amount) || amount <= 0) return json({ ok: false, error: "bad amount" });
 
@@ -114,10 +118,13 @@ function getOrCreateTab(name) {
 }
 
 function parseDate(s) {
-  // expects "YYYY-MM-DD"; build a local Date so the Sheet stores a real date value
+  // expects "YYYY-MM-DD"; build a local Date so the Sheet stores a real date value.
+  // Returns null (never "today") when the input isn't a real date - the caller
+  // must reject rather than guess.
   var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ""));
-  if (!m) return new Date();
-  return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  if (!m) return null;
+  var d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return isNaN(d.getTime()) ? null : d;
 }
 
 function isSeen(id) {

@@ -38,6 +38,7 @@
            "-" + String(d.getDate()).padStart(2, "0");
   }
   function todayISO() { return iso(new Date()); }
+  function isValidDate(s) { return /^\d{4}-\d{2}-\d{2}$/.test(String(s || "")); }
   function setDate(isoStr) {
     state.date = isoStr;
     dateInput.value = isoStr;
@@ -262,6 +263,10 @@
   function retryEntry(id) {
     var e = state.recent.find(function (x) { return x.id === id; });
     if (!e) return;
+    if (!isValidDate(e.date)) {
+      toast("This entry lost its date and can't be retried safely — please re-enter it", true);
+      return;
+    }
     if (!state.outbox.some(function (o) { return o.id === id; })) {
       state.outbox.push({ id: e.id, date: e.date, desc: e.desc, amount: e.amount, klass: e.klass });
       save(LS.outbox, state.outbox);
@@ -337,6 +342,13 @@
   }
 
   function send(entry) {
+    // Belt-and-braces: never let a corrupted/dateless entry reach the sheet -
+    // the server also refuses these now, but fail fast locally instead of
+    // wasting a round trip.
+    if (!isValidDate(entry.date)) {
+      return Promise.reject(new Error("entry has no valid date, not sending"));
+    }
+
     // A stalled request must not hang forever - that would wedge `flushing` and
     // silently stop every future retry. Time it out and let it fail instead.
     var ctrl = ("AbortController" in window) ? new AbortController() : null;
