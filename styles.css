@@ -7,6 +7,7 @@
   --muted: #93a2c4;
   --accent: #16a34a;
   --accent-press: #128a3f;
+  --warn: #f59e0b;
   --danger: #ef4444;
   --radius: 14px;
   --tap: 52px;
@@ -46,27 +47,23 @@ html, body {
   margin: 0;
   letter-spacing: 0.2px;
 }
-.sync {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  height: 32px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-  padding: 0 12px;
-  border-radius: 999px;
-}
-.sync .dot {
-  width: 8px; height: 8px; border-radius: 50%;
+.syncbox {
+  width: 40px; height: 40px;
+  border: 0; border-radius: 11px;
   background: var(--muted);
+  cursor: pointer;
   transition: background .2s;
+  flex: none;
 }
-.sync.is-ok   .dot { background: var(--accent); }
-.sync.is-wait .dot { background: #f59e0b; }
-.sync.is-off  .dot { background: var(--danger); }
+.syncbox.is-ok   { background: var(--accent); }
+.syncbox.is-wait { background: var(--warn); }
+.syncbox.is-off  { background: var(--danger); }
+.syncbox:active  { opacity: .8; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
 
 /* ---- form ---- */
 .form { display: flex; flex-direction: column; gap: 14px; flex: 1; }
@@ -227,17 +224,16 @@ input::placeholder { color: #5f6f92; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.err { border-color: var(--danger); }
 
-/* ---- top bar right cluster + pill buttons ---- */
+/* ---- top bar right cluster: two square buttons ---- */
 .topbar-right { display: flex; align-items: center; gap: 8px; }
 .iconbtn {
-  display: inline-flex; align-items: center; gap: 6px;
-  height: 32px; padding: 0 12px;
-  border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px;
+  border-radius: 11px;
   background: var(--surface); border: 1px solid var(--line);
   color: var(--muted); text-decoration: none; flex: none;
-  font-size: 12px; font-weight: 600;
 }
-.iconbtn svg { width: 15px; height: 15px; }
+.iconbtn svg { width: 19px; height: 19px; }
 .iconbtn:active { background: var(--surface-2); }
 
 /* ---- stats page ---- */

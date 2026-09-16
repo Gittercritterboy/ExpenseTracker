@@ -138,13 +138,19 @@
     var btn = $("syncBtn"), txt = $("syncText");
     btn.classList.remove("is-ok", "is-wait", "is-off");
     var waiting = state.outbox.length + Object.keys(pending).length;
-    if (!navigator.onLine && (waiting || state.outbox.length)) {
-      btn.classList.add("is-off"); txt.textContent = "Offline · " + state.outbox.length + " queued";
+    var label;
+    if (!navigator.onLine && state.outbox.length) {
+      btn.classList.add("is-off");
+      label = "Offline · " + state.outbox.length + " queued. Tap to retry.";
     } else if (waiting) {
-      btn.classList.add("is-wait"); txt.textContent = waiting + " to sync";
+      btn.classList.add("is-wait");
+      label = waiting + " to sync. Tap to retry now.";
     } else {
-      btn.classList.add("is-ok"); txt.textContent = "Synced";
+      btn.classList.add("is-ok");
+      label = "All synced.";
     }
+    txt.textContent = label;
+    btn.title = label;
   }
 
   /* ---------- recent list ---------- */
@@ -191,6 +197,12 @@
         undo.textContent = "Undo";
         undo.addEventListener("click", function () { cancelPending(e.id); });
         li.appendChild(undo);
+      } else if (e.status === "error") {
+        var retry = document.createElement("button");
+        retry.className = "r-undo";
+        retry.textContent = "Retry";
+        retry.addEventListener("click", function () { retryEntry(e.id); });
+        li.appendChild(retry);
       }
       recentEl.appendChild(li);
     });
@@ -243,6 +255,20 @@
     save(LS.recent, state.recent);
     renderRecent(); updateSync();
     toast("Entry removed");
+  }
+
+  // Re-queue a "will retry" entry that's no longer actually in the outbox
+  // (e.g. one lost to a background sendBeacon before this fix) and push it now.
+  function retryEntry(id) {
+    var e = state.recent.find(function (x) { return x.id === id; });
+    if (!e) return;
+    if (!state.outbox.some(function (o) { return o.id === id; })) {
+      state.outbox.push({ id: e.id, date: e.date, desc: e.desc, amount: e.amount, klass: e.klass });
+      save(LS.outbox, state.outbox);
+    }
+    updateSync();
+    toast("Retrying…");
+    flush();
   }
 
   function commit(id) {
@@ -311,13 +337,19 @@
   }
 
   function send(entry) {
+    // A stalled request must not hang forever - that would wedge `flushing` and
+    // silently stop every future retry. Time it out and let it fail instead.
+    var ctrl = ("AbortController" in window) ? new AbortController() : null;
+    var timer = ctrl && setTimeout(function () { ctrl.abort(); }, 20000);
+
     // Plain string body => Content-Type text/plain => no CORS preflight.
     // Apps Script /exec 302-redirects to a response with Access-Control-Allow-Origin: *
     return fetch(CFG.ENDPOINT, {
       method: "POST",
       body: payload(entry),
       redirect: "follow",
-      keepalive: true
+      keepalive: true,
+      signal: ctrl ? ctrl.signal : undefined
     }).then(function (res) {
       return res.text().then(function (t) {
         var data;
@@ -325,7 +357,8 @@
         catch (e) { throw new Error("non-JSON response (deployment not public?): " + t.slice(0, 120)); }
         if (data.ok !== true) throw new Error("server: " + (data.error || res.status));
       });
-    });
+    }).then(function (v) { if (timer) clearTimeout(timer); return v; },
+            function (err) { if (timer) clearTimeout(timer); throw err; });
   }
 
   /* ---------- lifecycle ---------- */
@@ -335,22 +368,32 @@
   document.addEventListener("visibilitychange", function () {
     if (document.visibilityState === "hidden") {
       commitAllNow();
-      // best-effort delivery if the app is being closed
+      // Best-effort extra attempt while the app is being closed/backgrounded.
+      // sendBeacon() only confirms the BROWSER accepted the request, never that
+      // the server actually received it - so items stay in the outbox regardless
+      // and get properly confirmed by a real flush() next time. (A previous
+      // version removed them here on a bare "sent" signal, which could silently
+      // drop an entry that never actually reached the sheet.)
       if (navigator.sendBeacon && endpointReady()) {
-        var left = [];
-        state.outbox.forEach(function (it) {
-          var sent = navigator.sendBeacon(CFG.ENDPOINT, payload(it));
-          if (!sent) left.push(it);
-        });
-        if (left.length !== state.outbox.length) {
-          state.outbox = left; save(LS.outbox, state.outbox);
-        }
+        state.outbox.forEach(function (it) { navigator.sendBeacon(CFG.ENDPOINT, payload(it)); });
       }
+    } else {
+      // Reopening/foregrounding the app is the most reliable moment to retry -
+      // background tabs get their timers throttled, so don't rely on the
+      // interval below alone while the app wasn't in front.
+      updateSync();
+      flush();
     }
   });
   window.addEventListener("online", function () { updateSync(); flush(); });
   window.addEventListener("offline", updateSync);
   setInterval(function () { if (navigator.onLine) flush(); }, 20000);
+  $("syncBtn").addEventListener("click", function () {
+    if (!navigator.onLine) { toast("No connection — will retry automatically", true); return; }
+    if (!state.outbox.length) { toast("Nothing to sync"); return; }
+    toast("Syncing…");
+    flush();
+  });
 
   /* ---------- wire up ---------- */
   [].forEach.call(dateChips.querySelectorAll(".chip[data-days]"), function (c) {
